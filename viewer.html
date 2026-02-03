@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C++ Code Viewer</title>
+    <title>Viewer</title>
     <!-- Prism.js CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
     <!-- Prism.js JS -->
@@ -12,7 +12,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 </head>
 <body>
-    <h1>C++ Code Viewer</h1>
+    <h1>Viewer</h1>
+    <form action="/viewer.html" method="get">
+      <label>
+        URL:
+        <input type="text" name="url" placeholder="dir" required>
+      </label>
+      <button type="submit">View</button>
+    </form>
     <pre><code id="code-block" class="language-cpp"></code></pre>
 
     <script>
