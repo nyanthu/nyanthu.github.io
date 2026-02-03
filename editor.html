@@ -1,63 +1,142 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>[NyanthuEngine] - Addon Editor</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        #container {
-            height: 100%;
-            width: 100%;
-        }
-    </style>
-</head>
-<body>
-    <div id="container"></div>
-    <script>
-        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
-        require(['vs/editor/editor.main'], function () {
-            // Lua言語の定義 (Monarchトークナイザー)
-            monaco.languages.register({ id: 'lua' });
-            monaco.languages.setMonarchTokensProvider('lua', {
-                // keywords を tokenizer の外に移動
-                keywords: [
-                    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
-                    'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
-                    'until', 'while', 'n_gate'
-                ],
-                tokenizer: {
-                    root: [
-                        [/[a-zA-Z_]\w*/, {
-                            cases: {
-                                '@keywords': 'keyword',
-                                '@default': 'identifier'
-                            }
-                        }],
-                        [/--\[\[[\s\S]*?\]\]/, 'comment'],  // マルチラインコメント
-                        [/--.*$/, 'comment'],               // シングルラインコメント
-                        [/[0-9]+(\.[0-9]+)?/, 'number'],   // 数値
-                        [/".*?"/, 'string'],               // 文字列 (ダブルクォート)
-                        [/\'.*?\'/, 'string'],             // 文字列 (シングルクォート)
-                        [/[\[\]\(\)\{\}]/, 'delimiter.bracket'],
-                        [/[,;]/, 'delimiter'],
-                        [/[-+\/*=<>!&|~^%#]+/, 'operator']
-                    ]
-                }
-            });
+<meta charset="UTF-8">
+<title>[NyanthuEngine] - Addon Editor</title>
 
-            // エディターの作成
-            monaco.editor.create(document.getElementById('container'), {
-                value: '--\n-- [NyanthuEngine] - Addon Editor\n--\n\nlocal function n_gate()\n    print("Hello, Lua!")\nend\nhello()',
-                language: 'lua',
-                theme: 'vs-dark',  // テーマを変更可能 (vs, vs-dark, hc-black など)
-                automaticLayout: true  // ウィンドウサイズに自動調整
-            });
-        });
-    </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+
+<style>
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+/* ===== NAV ===== */
+.nav {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    color: white;
+
+    background: #222222;
+    border-bottom: solid 2px #555;
+}
+
+.nav h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.nav a {
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+/* ===== EDITOR ===== */
+#container {
+    height: calc(100vh - 40px);
+    width: 100%;
+}
+</style>
+</head>
+
+<body>
+<div class="nav">
+    <h3>[NyanthuEngine] - Addon Editor</h3>
+    <a href="/">Home</a>
+    <a onclick="alert('There is addon editor of [NyanthuEngine]. you can write with lualang')">About</a>
+    <a>Push</a>
+</div>
+
+<div id="container"></div>
+
+<script>
+require.config({
+    paths: {
+        vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs'
+    }
+});
+
+require(['vs/editor/editor.main'], function () {
+
+    /* Lua language */
+    monaco.languages.register({ id: 'lua' });
+
+    monaco.languages.setMonarchTokensProvider('lua', {
+        keywords: [
+            'and','break','do','else','elseif','end','false','for','function',
+            'if','in','local','nil','not','or','repeat','return','then','true',
+            'until','while','n_gate'
+        ],
+
+        tokenizer: {
+            root: [
+                [/--\[\[[\s\S]*?\]\]/, 'comment'],
+                [/--.*$/, 'comment'],
+
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],
+                [/"/, 'string', '@string_double'],
+                [/'/, 'string', '@string_single'],
+
+                [/[0-9]+(\.[0-9]+)?/, 'number'],
+
+                [/[a-zA-Z_]\w*/, {
+                    cases: {
+                        '@keywords': 'keyword',
+                        '@default': 'identifier'
+                    }
+                }],
+
+                [/[\[\]\(\)\{\}]/, 'delimiter.bracket'],
+                [/[,;]/, 'delimiter'],
+                [/[-+\/*=<>!&|~^%#]+/, 'operator']
+            ],
+
+            string_double: [
+                [/[^\\"]+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/"/, 'string', '@pop']
+            ],
+
+            string_single: [
+                [/[^\\']+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/'/, 'string', '@pop']
+            ]
+        }
+    });
+
+    monaco.editor.create(document.getElementById('container'), {
+        value:
+`-- [NyanthuEngine] - Addon Editor
+-- [n_gate] is addon loadable function
+
+local function n_gate()
+    print("Hello, Lua!")
+end
+
+n_gate()`,
+        language: 'lua',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        fontSize: 14,
+        minimap: { enabled: false }
+    });
+});
+</script>
 </body>
 </html>
