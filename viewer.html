@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ Code Viewer</title>
+    <!-- Prism.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <!-- Prism.js JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <!-- C++ language support for Prism.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+</head>
+<body>
+    <h1>C++ Code Viewer</h1>
+    <pre><code id="code-block" class="language-cpp"></code></pre>
+
+    <script>
+        // URLパラメータからファイルパスを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const fileUrl = urlParams.get('url');
+
+        if (fileUrl) {
+            // ファイルをフェッチ（同じドメインを仮定して相対パスで）
+            fetch('/' + fileUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(code => {
+                    // コードを挿入
+                    document.getElementById('code-block').textContent = code;
+                    // Prismでハイライト
+                    Prism.highlightAll();
+                })
+                .catch(error => {
+                    console.error('Error fetching the file:', error);
+                    document.getElementById('code-block').textContent = 'Error loading file: ' + error.message;
+                });
+        } else {
+            document.getElementById('code-block').textContent = 'No file specified. Use ?url=project1/main.cpp';
+        }
+    </script>
+</body>
+</html>
